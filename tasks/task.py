@@ -1,18 +1,21 @@
 import os
 import shutil
-import tempfile
-from pathlib import Path
+import uuid
 
 
-class TempDir(object):
+class TempDir():
 
-    def __init__(self, suffix=None, prefix=None, dir=None):
-        dir = os.getcwd()
-        self.name = tempfile.mkdtemp(suffix, prefix, dir=dir)
-        os.mkdir(self.name)
+    def __init__(self, dir_path=None):
+        self.dir_path = dir_path or os.getcwd()
+        self.tmpdir = str(uuid.uuid4())
+        self.save_dir = os.path.join(self.dir_path, self.tmpdir)
 
     def __enter__(self):
-        return self.name
+        os.mkdir(self.save_dir)
+        os.chdir(self.save_dir)
+        return self
 
-    def __exit__(self, exc, value, tb):
-        shutil.rmtree(self.name)
+    def __exit__(self, exc_type, exc_value, traceback):
+        os.chdir(self.dir_path)
+        shutil.rmtree(self.save_dir)
+
